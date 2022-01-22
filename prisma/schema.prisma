@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Customer {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  nama String
+  no_hp String
+  alamat String?
+  email String?
+}
+
+model GoldName {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  name String
+  stock String
+}
+
+model GoldType {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  name String
+}
+
+model PaymentType {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  name String
+}
+
+model Price {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  Kadar String
+  Harga Int
+}
+
+model TransactionType {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  nama String
+}
+
+model Nota {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  object String
+  customer String
+  total String
+  nomor_nota String
+  tipe String @default("jual")
+  catatan String @default("")
+  foto String @default("")
+  ongkos String @default("")
+  tipe_dp String @default("")
+  dp String @default("")
+  sisa_pelunasan String @default("")
+  nota_sebelum String @default("")
+}
+
+model User {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  name String
+  username String
+  password String
+}

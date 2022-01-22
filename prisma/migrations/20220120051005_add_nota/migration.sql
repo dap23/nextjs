@@ -1,0 +1,6 @@
+-- CreateTable
+CREATE TABLE "Nota" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "object" TEXT NOT NULL
+);
