@@ -25,7 +25,20 @@ function Opname() {
     function getTotal() {
         let t = 0;
         record.forEach(el => {
-            t = t + parseInt(el.total);
+            if ((el.tipe == "jual" || el.tipe == "tukar tambah" || el.tipe == "pesanan") && el.total != "NaN") {
+                t = t + parseInt(el.total);
+            }
+        });
+
+        return t.toLocaleString("id-ID");
+    }
+
+    function getTotalKeluar() {
+        let t = 0;
+        record.forEach(el => {
+            if ((el.tipe == "beli" || el.tipe == "tukar kurang") && el.total != "NaN") {
+                t = t + parseInt(el.total);
+            }
         });
 
         return t.toLocaleString("id-ID");
@@ -40,7 +53,7 @@ function Opname() {
                     <div className='w-2/12'>{item.nomor_nota}</div>
                     <div className='w-2/12'>{item.tipe.toUpperCase()}</div>
                     <div className='w-2/12'>{new Date(item.createdAt).toLocaleDateString('id-ID', dateOptions)}</div>
-                    <div className='w-5/12 text-right'>{parseInt(item.total).toLocaleString("id-ID")}</div>
+                    <div className='w-5/12 text-right'>{item.total != "NaN" ? parseInt(item.total).toLocaleString("id-ID") : "-"}</div>
                 </div>
             )
         })
@@ -68,7 +81,7 @@ function Opname() {
             </div>
             <div className='bg-green-500 flex flex-col items-center rounded p-10'>
                 <div className='font-bold text-sm'>Uang Keluar</div>
-                <div className='font-bold text-2xl'>Rp 0</div>
+                <div className='font-bold text-2xl'>Rp {getTotalKeluar()}</div>
             </div>
             <div className='bg-red-500 flex flex-col items-center rounded p-10'>
                 <div className='font-bold text-sm'>Total</div>

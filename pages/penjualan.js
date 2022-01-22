@@ -256,7 +256,7 @@ function Penjualan() {
         try {
             var res = await axios.get(`/api/customer/get?size=${size}&search=${search}`);
             res.data.data.forEach(el => {
-                arr.push({ value: el, label: `${el.nama}-${el.alamat}` });
+                arr.push({ value: el, label: `${el.nama} - ${el.alamat ? el.alamat : "No Address"}` });
             });
             setOption(arr);
             setCustomer(res.data);
@@ -455,7 +455,9 @@ function Penjualan() {
         try {
             var res = await axios.get(`/api/nota/get?size=${size}&search=${search}`);
             res.data.data.forEach(el => {
-                arr.push({ value: el, label: `${el.nomor_nota}-${el.customer}` });
+                if (el.tipe != "pelunasan") {
+                    arr.push({ value: el, label: `${el.nomor_nota} - ${el.customer} - ${el.tipe.toUpperCase()}` });
+                }
             });
             setNotaOption(arr);
             return;
@@ -525,7 +527,6 @@ function Penjualan() {
 
     return (
         <div className='w-full'>
-            <ToastContainer />
             <div className='flex justify-start my-5 border p-5 shadow-lg'>
                 <div className="w-28 mr-3">
                     <div onClick={() => changeType("jual")} className={`text-center rounded-md flex justify-center p-5 cursor-pointer ${trxType == "jual" ? "bg-green-500" : "bg-gray-300"} mb-2`}>

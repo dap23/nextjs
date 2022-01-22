@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         ],
         where: {
             createdAt: {
-                gt: new Date(start),
+                gt: new Date(d),
                 lt: new Date(end)
             },
         },

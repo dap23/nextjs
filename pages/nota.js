@@ -145,12 +145,17 @@ function Nota() {
             return (
                 <div key={el.id} className='grid grid-cols-8 gap-3 text-left text-xs border-b py-3 items-center'>
                     <div>{index + 1}</div>
-                    <div>{el.tipe.toUpperCase()}</div>
+                    {el.tipe == "jual" && <div className='text-ss bg-lime-500 rounded-full px-1 text-white text-center'>{el.tipe.toUpperCase()}</div>}
+                    {el.tipe == "beli" && <div className='text-ss bg-emerald-500 rounded-full px-1 text-white text-center'>{el.tipe.toUpperCase()}</div>}
+                    {el.tipe == "pesanan" && <div className='text-ss bg-cyan-500 rounded-full px-1 text-white text-center'>{el.tipe.toUpperCase()}</div>}
+                    {el.tipe == "pelunasan" && <div className='text-ss bg-indigo-500 rounded-full px-1 text-white text-center'>{el.tipe.toUpperCase()}</div>}
+                    {el.tipe == "tukar tambah" && <div className='text-ss bg-pink-500 rounded-full px-1 text-white text-center'>{el.tipe.toUpperCase()}</div>}
+                    {el.tipe == "tukar kurang" && <div className='text-ss bg-rose-500 rounded-full px-1 text-white text-center'>{el.tipe.toUpperCase()}</div>}
                     <div>{el.nomor_nota}</div>
-                    <div>{new Date(el.createdAt).toLocaleDateString('id-ID', dateOptions)} {new Date(el.createdAt).toLocaleTimeString('id-ID')}</div>
+                    <div className=''>{new Date(el.createdAt).toLocaleDateString('id-ID', dateOptions)} {new Date(el.createdAt).toLocaleTimeString('id-ID')}</div>
                     <div>{jenis}</div>
-                    <div>{el.customer}</div>
-                    <div>{parseInt(el.total).toLocaleString("id-ID")}</div>
+                    <div>{el.customer.includes("undefined") ? "-" : el.customer}</div>
+                    <div>{el.total != "NaN" ? parseInt(el.total).toLocaleString("id-ID") : "-"}</div>
                     <div className='flex justify-end w-full'>
                         <button onClick={() => deleteResource(el.id)} className='text-xs bg-red-500 py-1 rounded px-2 text-white flex item-center'><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -13,7 +13,9 @@ function Login() {
     }
 
     const handleSubmit = async (e) => {
+
         e.preventDefault();
+        return;
         try {
             var res = await axios.post(process.env.API_URL + '/api/auth/local', userData);
             setCookie(null, 'jwt', res.data.jwt, {
@@ -39,7 +41,7 @@ function Login() {
 
     return (
         <div>
-            <img className='w-48 mt-20 mb-10 mx-auto' src='img/logo.svg' />
+            <img className='w-48 mt-20 mb-10 mx-auto' src='img/logo.png' />
             <form onSubmit={handleSubmit} className='bg-sky-50 border mb-20 rounded-lg p-5 w-6/12 mx-auto flex flex-col'>
 
                 <input required onChange={(e) => handleChange(e)} type="email" name="identifier" className='bg-white mt-2 p-2 border rounded' placeholder='email' />
