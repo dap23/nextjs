@@ -1,21 +1,10 @@
 {
   "name": "tokoemashmuradi",
   "version": "0.1.0",
-  "build": {
-    "appId": "com.yossava.id",
-    "productName": "Toko Emas H. Murdani",
-    "files": [
-      "build/**/*",
-      "electron/main.ts",
-      "package.json"
-    ],
-    "extends": null
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "dist": "next-pkg",
     "lint": "next lint"
   },
   "dependencies": {
