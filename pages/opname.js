@@ -1,7 +1,7 @@
-import { useState, React, useEffect } from 'react';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import axios from 'axios';
+import { useState, React, useEffect } from 'react'
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
+import axios from 'axios'
 
 function Opname() {
     var date = new Date();
