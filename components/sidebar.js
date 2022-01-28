@@ -1,16 +1,16 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from "next/router"
-import { FaCashRegister, FaHome, FaUserFriends, FaWallet, FaRegGem, FaExchangeAlt, FaChartPie, FaDatabase, FaBookOpen, FaSignInAlt } from "react-icons/fa"
+import { FaCashRegister, FaHistory, FaUserFriends, FaWallet, FaRegGem, FaExchangeAlt, FaChartPie, FaDatabase, FaBookOpen, FaSignInAlt } from "react-icons/fa"
 import { MdPersonSearch } from "react-icons/md"
 
 function Sidebar() {
     const router = useRouter();
 
     return (
-        <div className="flex flex-col justify-between w-2/12 bg-transparent p-3 rounded-xl">
+        <div className="flex flex-col justify-between w-2/12 bg-transparent p-3 rounded-xl no-print">
             <div>
-                <img src='img/logo.png' className='w-36 mt-4 mb-10 mx-auto' alt='logo' />
+                <img src='/img/logo.png' className='w-36 mt-4 mb-10 mx-auto' alt='logo' />
 
                 <ul className="space-y-2 text-sm cursor-pointer">
 
@@ -28,7 +28,7 @@ function Sidebar() {
                         <Link href="/nota" >
                             <div className="flex items-center space-x-3 p-2 rounded-md font-medium">
                                 <span className="w-4">
-                                    <FaCashRegister />
+                                    <FaHistory />
                                 </span>
                                 <span>History</span>
                             </div>
@@ -93,8 +93,8 @@ function Sidebar() {
                         </Link>
 
                     </li>
-                    <li className={router.pathname == "/login" ? "bg-green-500 text-white rounded-md transition" : "text-slate-800 hover:bg-gray-200 rounded-md transition"}>
-                        <Link href="/login" >
+                    <li className={router.pathname == "/" ? "bg-green-500 text-white rounded-md transition" : "text-slate-800 hover:bg-gray-200 rounded-md transition"}>
+                        <Link href="/" >
                             <div className="flex items-center space-x-3 p-2 rounded-md font-medium">
                                 <span className="w-4">
                                     <FaSignInAlt />

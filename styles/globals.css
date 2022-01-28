@@ -11,6 +11,10 @@
   font-size: 8px;
 }
 
+.text-2ss {
+  font-size: 10px;
+}
+
 .white {
     height: 100%;
   }
@@ -111,24 +115,23 @@
             animation-duration: 12s;
   }
 
-  @media print
-{    
-    .no-print, .no-print *
-    {
-        display: none !important;
-    }
+
+@media print {
+
+  * {
+      -webkit-print-color-adjust: exact;
+      box-shadow: none !important;
+      
+  }
+
+  .no-print, .no-print * {
+    display: none;
+  }
+
     .padding-print {
       padding-left: 0;
       padding-right: 0;
     }
-}
-
-@media print {
-  * {
-      -webkit-print-color-adjust: exact;
-      font-size: 11px;
-      
-  }
   .print-area {
     margin: 0 !important; 
     padding: 0 !important;

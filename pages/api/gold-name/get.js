@@ -7,11 +7,22 @@ export default async function handler(req, res) {
     const take = req.query.size ? parseInt(req.query.size) : 10;
     const page = req.query.page ?? 1;
     const search = req.query.search ?? "";
+    const typeId = req.query.typeId ?? "";
     const id = req.query.id ?? "";
     const skip = (page - 1) * take;
     const count = await prisma.goldName.count();
     let allOrders;
     if (id == "") {
+        var ti;
+        if (typeId != "") {
+            ti = {
+                type_id: {
+                    contains: typeId,
+                },
+            }
+        } else {
+            ti = {}
+        }
         allOrders = await prisma.goldName.findMany({
             orderBy: [
                 {
@@ -19,12 +30,13 @@ export default async function handler(req, res) {
                 },
             ],
             where: {
-                OR: [
+                AND: [
                     {
                         name: {
                             contains: search,
                         },
-                    }
+                    },
+                    ti
                 ],
             },
             skip: skip,

@@ -14,6 +14,8 @@ function JenisPembayaran() {
     const [editData, setEditData] = useState({});
     const [editId, setEditId] = useState(0);
     const [pagination, setPagination] = useState({});
+    const [capturedImage, setCapturedImage] = useState("");
+
 
     useEffect(() => {
         const cks = nookies.get(null);
@@ -29,6 +31,26 @@ function JenisPembayaran() {
         const { name, value } = e.target;
         setUserData({ ...userData, [name]: value });
     }
+
+    function getBase64(file, cb) {
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function () {
+            cb(reader.result)
+        };
+        reader.onerror = function (error) {
+            console.log('Error: ', error);
+        };
+    }
+
+    const onFileChange = event => {
+
+        // Update the state
+        getBase64(event.target.files[0], (result) => {
+            setCapturedImage(result);
+        });
+
+    };
 
     const handleUpdateChange = (e) => {
         const { name, value } = e.target;
@@ -59,6 +81,7 @@ function JenisPembayaran() {
         try {
             var res = await axios.get(`${api_url}get?page=${p}&search=${search}`);
             setCustomer(res.data.data);
+
             setPagination(res.data.pagination);
         } catch (err) {
             console.log(err);
@@ -84,7 +107,7 @@ function JenisPembayaran() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            var res = await axios.post(`${api_url}create`, userData);
+            var res = await axios.post(`${api_url}create`, { ...userData, logo: capturedImage });
             toast.success(`${res_name} berhasil ditambahkan`);
             getCust();
         } catch (err) {
@@ -95,7 +118,7 @@ function JenisPembayaran() {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            var res = await axios.post(`${api_url}create`, editData);
+            var res = await axios.post(`${api_url}create`, { ...editData, logo: capturedImage });
             toast.success(`${res_name} berhasil diedit`);
             getCust();
         } catch (err) {
@@ -108,6 +131,7 @@ function JenisPembayaran() {
         try {
             var res = await axios.get(`${api_url}get?id=${id}`);
             setEditData(res.data.data);
+            setCapturedImage(res.data.data.logo);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
             console.log(err);
@@ -123,9 +147,10 @@ function JenisPembayaran() {
 
         return custArr.map((el, index) => {
             return (
-                <div key={el.id} className='grid grid-cols-3 gap-3 text-left text-xs border-b py-3'>
+                <div key={el.id} className='grid grid-cols-4 gap-3 text-left text-xs border-b py-3'>
                     <div>{index + 1}</div>
                     <div>{el.name}</div>
+                    <div><img src={el.logo} className='h-5' /></div>
                     <div className='flex justify-end w-full'>
                         <button onClick={() => editResource(el.id)} className='text-xs bg-green-500 mr-1 p-1 rounded text-white'><FaPencilAlt /></button>
                         <button onClick={() => deleteResource(el.id)} className='text-xs bg-red-500 p-1 rounded text-white'><FaTrashAlt /></button>
@@ -145,7 +170,10 @@ function JenisPembayaran() {
                     <form onSubmit={handleSubmit}>
                         <div className='rounded p-3 grid grid-cols-2 gap-3'>
                             <input onChange={(e) => handleChange(e)} required placeholder='Nama' name="name" className='p-2 border rounded' />
+                            <input className='border py-2 px-6' type="file" onChange={(e) => onFileChange(e)} />
+                            <img src={capturedImage} className="w-16" />
                         </div>
+
                         <div className='flex justify-end w-full p-3'>
                             <button className='py-2 px-10 border rounded bg-green-400 text-white font-bold'>SIMPAN</button>
                         </div>
@@ -159,6 +187,8 @@ function JenisPembayaran() {
                     <form onSubmit={handleUpdate}>
                         <div className='rounded p-3 grid grid-cols-2 gap-3'>
                             <input onChange={(e) => handleUpdateChange(e)} required placeholder='Nama' value={editData?.name || ""} name="name" className='p-2 border rounded' />
+                            <input className='border py-2 px-6' type="file" onChange={(e) => onFileChange(e)} />
+                            <img src={capturedImage} className="w-16" />
                         </div>
                         <div className='flex justify-end w-full p-3'>
                             <button className='py-2 px-10 border rounded bg-green-400 text-white font-bold'>SIMPAN</button>
@@ -166,6 +196,8 @@ function JenisPembayaran() {
 
                     </form>
                 </div>}
+
+
 
                 <hr />
 
@@ -193,9 +225,10 @@ function JenisPembayaran() {
                         </div>
                     </div>
 
-                    <div className='grid grid-cols-3 gap-3 text-left font-bold text-xs border-b border-t py-3'>
+                    <div className='grid grid-cols-4 gap-3 text-left font-bold text-xs border-b border-t py-3'>
                         <div>No</div>
                         <div>Nama</div>
+                        <div>Logo</div>
                         <div className='text-right'>Action</div>
                     </div>
                     {custRow()}

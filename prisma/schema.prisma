@@ -24,6 +24,9 @@ model GoldName {
   createdAt  DateTime @default(now())
   name String
   stock String
+  type_id String?
+  type_name String?
+  type_object String?
 }
 
 model GoldType {
@@ -36,6 +39,7 @@ model PaymentType {
   id         String @id @default(uuid())
   createdAt  DateTime @default(now())
   name String
+  logo String?
 }
 
 model Price {
@@ -66,6 +70,26 @@ model Nota {
   dp String @default("")
   sisa_pelunasan String @default("")
   nota_sebelum String @default("")
+  tanggal_selesai String @default("")
+}
+
+model NotaEdited {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  original_nota_id String
+  object String
+  customer String
+  total String
+  nomor_nota String
+  tipe String @default("jual")
+  catatan String @default("")
+  foto String @default("")
+  ongkos String @default("")
+  tipe_dp String @default("")
+  dp String @default("")
+  sisa_pelunasan String @default("")
+  nota_sebelum String @default("")
+  tanggal_selesai String @default("")
 }
 
 model User {
@@ -74,4 +98,16 @@ model User {
   name String
   username String
   password String
+}
+
+model Karyawan {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  nama String
+  alamat String
+  password String
+  bagian String
+  gaji String
+  tanggal_masuk String
+  tanggal_keluar String @default("")
 }

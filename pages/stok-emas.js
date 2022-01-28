@@ -3,6 +3,7 @@ import nookies from 'nookies'
 import axios from 'axios'
 import { FaPencilAlt, FaTrashAlt, FaSearch } from "react-icons/fa"
 import { toast } from 'react-toastify'
+import Select from 'react-select'
 
 function StockEmas() {
 
@@ -14,11 +15,14 @@ function StockEmas() {
     const [editData, setEditData] = useState({});
     const [editId, setEditId] = useState(0);
     const [pagination, setPagination] = useState({});
+    const [typeOption, setTypeOption] = useState([]);
+    const [selectedType, setSelectedType] = useState({});
 
     useEffect(() => {
         const cks = nookies.get(null);
         setCookies(cks);
         getCust();
+        getType();
     }, [])
 
     const api_url = "/api/gold-name/";
@@ -65,6 +69,19 @@ function StockEmas() {
         }
     }
 
+    const getType = async () => {
+        var arr = [];
+        try {
+            var res = await axios.get(`/api/gold-type/get`);
+            res.data.data.forEach(el => {
+                arr.push({ value: el, label: `${el.name}` });
+            });
+            setTypeOption(arr);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     const deleteResource = async (id) => {
         var result = confirm("Lanjutkan menghapus?");
         if (!result) {
@@ -84,7 +101,7 @@ function StockEmas() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            var res = await axios.post(`${api_url}create`, userData);
+            var res = await axios.post(`${api_url}create`, { ...userData, type_id: selectedType.value.id, type_name: selectedType.value.name, type_object: JSON.stringify(selectedType) });
             toast.success(`${res_name} berhasil ditambahkan`);
             getCust();
         } catch (err) {
@@ -95,7 +112,7 @@ function StockEmas() {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            var res = await axios.post(`${api_url}create`, editData);
+            var res = await axios.post(`${api_url}create`, { ...editData, type_id: selectedType.value.id, type_name: selectedType.value.name, type_object: JSON.stringify(selectedType) });
             toast.success(`${res_name} berhasil diedit`);
             getCust();
         } catch (err) {
@@ -108,6 +125,7 @@ function StockEmas() {
         try {
             var res = await axios.get(`${api_url}get?id=${id}`);
             setEditData(res.data.data);
+            setSelectedType(JSON.parse(res.data.data.type_object));
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
             console.log(err);
@@ -123,10 +141,11 @@ function StockEmas() {
 
         return custArr.map((el, index) => {
             return (
-                <div key={el.id} className='grid grid-cols-4 gap-3 text-left text-xs border-b py-3'>
+                <div key={el.id} className='grid grid-cols-5 gap-3 text-left text-xs border-b py-3'>
                     <div>{index + 1}</div>
                     <div>{el.name}</div>
                     <div>{el.stock}</div>
+                    <div>{el.type_name}</div>
                     <div className='flex justify-end w-full'>
                         <button onClick={() => editResource(el.id)} className='text-xs bg-green-500 mr-1 p-1 rounded text-white'><FaPencilAlt /></button>
                         <button onClick={() => deleteResource(el.id)} className='text-xs bg-red-500 p-1 rounded text-white'><FaTrashAlt /></button>
@@ -147,6 +166,7 @@ function StockEmas() {
                         <div className='rounded p-3 grid grid-cols-2 gap-3'>
                             <input onChange={(e) => handleChange(e)} required placeholder='Nama' name="name" className='p-2 border rounded' />
                             <input onChange={(e) => handleChange(e)} required placeholder='Stock' name="stock" className='p-2 border rounded' />
+                            <Select onChange={(e) => setSelectedType(e)} id="gold-type" instanceId="gold-type" options={typeOption} />
                         </div>
                         <div className='flex justify-end w-full p-3'>
                             <button className='py-2 px-10 border rounded bg-green-400 text-white font-bold'>SIMPAN</button>
@@ -162,6 +182,7 @@ function StockEmas() {
                         <div className='rounded p-3 grid grid-cols-2 gap-3'>
                             <input onChange={(e) => handleUpdateChange(e)} required placeholder='Nama' value={editData?.name || ""} name="name" className='p-2 border rounded' />
                             <input onChange={(e) => handleUpdateChange(e)} required placeholder='Stock' value={editData?.stock || ""} name="stock" className='p-2 border rounded' />
+                            <Select value={selectedType} onChange={(e) => setSelectedType(e)} id="gold-type" instanceId="gold-type" options={typeOption} />
                         </div>
                         <div className='flex justify-end w-full p-3'>
                             <button className='py-2 px-10 border rounded bg-green-400 text-white font-bold'>SIMPAN</button>
@@ -196,10 +217,11 @@ function StockEmas() {
                         </div>
                     </div>
 
-                    <div className='grid grid-cols-4 gap-3 text-left font-bold text-xs border-b border-t py-3'>
+                    <div className='grid grid-cols-5 gap-3 text-left font-bold text-xs border-b border-t py-3'>
                         <div>No</div>
                         <div>Nama</div>
                         <div>Stok</div>
+                        <div>Jenis</div>
                         <div className='text-right'>Action</div>
                     </div>
                     {custRow()}

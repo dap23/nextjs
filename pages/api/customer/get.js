@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     const prisma = new PrismaClient()
     await prisma.$connect();
 
-    const take = 10;
+    const take = req.query.size ?? 10;
     const page = req.query.page ?? 1;
     const search = req.query.search ?? "";
     const id = req.query.id ?? "";
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
                 ],
             },
             skip: skip,
-            take: take
+            take: parseInt(take)
         })
     } else {
         allOrders = await prisma.customer.findFirst({

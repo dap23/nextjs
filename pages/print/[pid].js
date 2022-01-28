@@ -1,5 +1,5 @@
 import { useState, React, useEffect } from 'react'
-import { useRouter } from 'next/router'
+import { Router, useRouter } from 'next/router'
 import NotaRow from '../../components/item-row-nota'
 import { FaPhoneAlt, FaPlusSquare, FaWindowClose } from "react-icons/fa"
 import axios from 'axios'
@@ -16,19 +16,45 @@ function PrintNota() {
     const [foto, setFoto] = useState("")
     const [tipe, setTipe] = useState("")
     const [sisa, setSisa] = useState("")
+    const [tanggalSelesai, setTanggalSelesai] = useState("")
     const [dp, setDp] = useState("")
     const [dpType, setDpType] = useState("")
     const [lunas, setLunas] = useState(false)
     const [notaLunas, setNotaLunas] = useState("")
+    const [notaId, setNotaId] = useState("")
+    const [editedNota, setEditedNota] = useState(null)
+    const [editedNotaAttribute, setEditedNotaAttribute] = useState(null)
+    const [ongkos, setOngkos] = useState(null)
 
     useEffect(() => {
         const { pid } = router.query
         getNota(pid);
+        getNotaEdited(pid);
+        setNotaId(pid);
     }, [])
 
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
     const { inputRef } = useBarcode({
-        value: nomorNota
+        value: nomorNota,
+        options: {
+            displayValue: tipe == "pesanan" ? true : false,
+            height: "50",
+            background: 'transparent',
+        }
     });
+
+    async function getNotaEdited(id) {
+        try {
+            let result = await axios.get(`/api/nota/get-edited?id=${id}`)
+            setEditedNota(JSON.parse(result.data.object));
+            var attr = result.data;
+            delete attr.object;
+            setEditedNotaAttribute(attr);
+        } catch (error) {
+
+        }
+    }
 
     async function getNota(id) {
         try {
@@ -50,6 +76,8 @@ function PrintNota() {
             setSisa(result.data.data.sisa_pelunasan)
             setDp(result.data.data.dp)
             setDpType(result.data.data.tipe_dp)
+            setOngkos(result.data.data.ongkos)
+            setTanggalSelesai(result.data.data.tanggal_selesai)
 
         } catch (error) {
 
@@ -68,10 +96,10 @@ function PrintNota() {
             if (Object.hasOwnProperty.call(newObj, key)) {
                 const el = newObj[key];
                 arr.push(
-                    <div key={el.payment.id} className='text-left'>
+                    <div key={el.payment?.id} className='text-left'>
 
                         <div className='grid grid-cols-3 gap-3 text-left py-1'>
-                            <div>{el.payment.name}</div>
+                            <div>{el.payment?.name}</div>
                             <div>{el.nominal}</div>
                             <div>{el.kembali ?? ""}</div>
                         </div>
@@ -173,18 +201,71 @@ function PrintNota() {
         for (const key in total) {
             if (Object.hasOwnProperty.call(total, key)) {
                 const el = total[key];
-                arr.push(<NotaRow key={key} data={total[key]} tipe={tipe} />)
+                arr.push(<NotaRow key={key} lunas={lunas} data={total[key]} tipe={tipe} />)
             }
         }
 
         return arr;
     }
 
-    return <div className='px-20 py-10 print-area'>
-        <button onClick={() => router.back()} className='rounded bg-slate-100 text-slate-800 text-sm py-1 px-3 no-print'>Back</button>
-        <button onClick={() => window.print()} className='rounded bg-green-500 text-white text-sm py-1 px-3 no-print ml-1'>Print Nota</button>
+    function originalPaymentRow() {
 
-        <div className='bg-white border w-full mt-1 p-5 shadow-lg paper relative'>
+        if (editedNota != null) {
+            var payment = editedNota.payment;
+            var arr = [];
+            for (const key in payment) {
+                if (Object.hasOwnProperty.call(payment, key)) {
+                    const el = payment[key];
+                    arr.push(
+                        <div key={key} className='grid grid-cols-3 gap-3'>
+                            <div>{el.payment.name}</div>
+                            <div>{parseInt(el.nominal).toLocaleString("id-ID")}</div>
+                            <div>{el.kembali}</div>
+                        </div>)
+                }
+            }
+
+            return arr;
+        } else {
+            return;
+        }
+    }
+
+    function originalItemRow() {
+
+        if (editedNotaAttribute != null) {
+            var payment = editedNota.item;
+            var arr = [];
+            for (const key in payment) {
+                if (Object.hasOwnProperty.call(payment, key)) {
+                    const el = payment[key];
+                    arr.push(
+                        <div key={key} className='grid grid-cols-6 gap-3'>
+                            <div>{el.qty}</div>
+                            <div>{el.nama}</div>
+                            <div>{el.berat}</div>
+                            <div>{el.kadar}</div>
+                            <div>{el.harga}</div>
+                            <div>{el.total}</div>
+                        </div>)
+                }
+            }
+
+            return arr;
+        } else {
+            return;
+        }
+    }
+
+    return <div className='px-20 py-10 print-area'>
+        <div className='mx-auto w-fit px-10'>
+            <button onClick={() => router.push(`/nota`)} className='rounded bg-slate-100 text-slate-800 text-sm py-2 px-5 no-print'>Back</button>
+            <button onClick={() => router.push(`/penjualan-edit/${notaId}`)} className='rounded bg-yellow-500 text-white text-sm py-2 px-5 no-print ml-1'>Edit</button>
+            <button onClick={() => window.print()} className='rounded bg-green-500 text-white text-sm py-2 px-5 no-print ml-1'>Print</button>
+        </div>
+
+
+        <div className='bg-white border w-full mt-1 p-5 shadow-lg paper relative hidden'>
             <div className='flex justify-between text-center mb-3'>
                 <div className='w-4/12 text-slate-600'>
                     <img src='../img/logo.png' className='w-36 mb-2 mx-auto' alt='logo' />
@@ -194,12 +275,12 @@ function PrintNota() {
                 <div className='text-left text-xs'>
                     <p>No: <span className='font-bold text-amber-600'>{nomorNota}</span></p>
                     <p>Jumat, 14 Januari 2022</p>
-                    <p>Pelanggan: {obj.customer?.nama}</p>
-                    <p>{obj.customer?.alamat}</p>
-                    <p>{obj.customer?.no_hp}</p>
+                    <p>Pelanggan: {obj.customer?.value?.nama}</p>
+                    <p>{obj.customer?.value?.alamat}</p>
+                    <p>{obj.customer?.value?.no_hp}</p>
                 </div>
                 <div className='w-40 absolute top-0 right-60 barcode'>
-                    <svg className='w-full' ref={inputRef} />
+
                 </div>
             </div>
             {tipe == "jual" && <div className='w-full border-t flex text-left text-xs font-bold py-2 border-b bg-amber-400 text-white'>
@@ -271,24 +352,63 @@ function PrintNota() {
                 <span>NOTA PELUNASAN: {notaLunas}</span>
             </div>}
 
-            <div className='flex justify-between'>
-                <div className='w-5/12 p-2 mt-3'>
-                    <p className='font-bold text-xs uppercase'>Perhatian</p>
-                    <ul className='text-xs'>
-                        <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                        <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                        <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                        <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                    </ul>
-                </div>
-                <div className='w-3/12 p-2 mt-3 text-center flex flex-col justify-between'>
-                    <p className='font-bold text-xs'>Hormat Kami</p>
-                    <p className='font-bold text-xs'>Toko Mas Agung Jaya</p>
-
-                </div>
-            </div>
         </div>
-        <div className='bg-white shadow-lg mt-2 p-5 no-print'>
+        <div className='h-3 w-full no-print'></div>
+        {(tipe == "jual" || lunas) && <div className='relative w-max shadow-md mx-auto'>
+            <img style={{ width: "940px" }} src='/img/nota-background.jpg' />
+            <div className='absolute left-40 top-0 font-semibold text-2xl'>{nomorNota}</div>
+            <div className='text-xs absolute top-3 right-5 font-bold w-64'>
+                <p>Cileduk - {new Date().toLocaleDateString('id-ID', dateOptions)}</p>
+                <p>Nama Pelanggan: {obj.customer?.value?.nama}</p>
+            </div>
+            <svg className='absolute h-20 left-2 top-10' ref={inputRef} />
+            <div className='absolute font-bold bottom-24 right-12 -mb-1'>{parseInt(gt).toLocaleString("id-ID")}</div>
+            <div className='absolute left-0 top-56'>{notaRow()}</div>
+        </div>}
+
+        {(tipe == "beli" || tipe == "tukar tambah" || tipe == "tukar kurang") && <div className='w-11/12 mx-auto shadow-md p-3'>
+            <div className='flex items-center justify-between'>
+                <div className='font-semibold text-2xl'>{nomorNota}</div>
+                <svg className='h-20' ref={inputRef} />
+            </div>
+            <div className='text-xs font-bold w-64'>
+                <p>{new Date().toLocaleDateString('id-ID', dateOptions)}</p>
+                <p>Nama Pelanggan: {obj.customer?.value?.nama}</p>
+            </div>
+            <div className='font-bold'>Total: {parseInt(gt).toLocaleString("id-ID")}</div>
+            <hr />
+            <div className='w-full flex text-left text-xs py-2 border-b'>
+                <div className='ml-2 w-2/12'>Qty</div>
+                <div className='ml-2 w-2/12'>Nama</div>
+                <div className='w-1/12'>Berat</div>
+                <div className='w-2/12'>Harga Lama</div>
+                <div className='w-1/12'>Kadar</div>
+                <div className='w-2/12'>Harga/gr</div>
+                <div className='w-1/12 text-right mr-2'>Total</div>
+            </div>
+            <div className='w-full'>{notaRow()}</div>
+
+        </div>}
+        <svg className='hidden' ref={inputRef} />
+
+        {tipe == "pesanan" && !lunas && <div className='relative w-max shadow-md mx-auto font-semibold'>
+            <img style={{ width: "940px" }} src='/img/nota-pesanan.jpg' />
+            <div className='text-xs absolute pt-1 top-12 right-20 w-64'>
+                <p>{obj.customer?.value?.nama}</p>
+            </div>
+            <div className='absolute top-20 right-64 text-xs w-20'>{obj.customer?.value?.no_hp}</div>
+            <div className='absolute text-xs right-20 top-14'>{new Date().toLocaleDateString('id-ID')}</div>
+            <div className='absolute text-xs right-20 top-24'>{new Date(tanggalSelesai).toLocaleDateString('id-ID')}</div>
+            <div className='absolute text-xs right-64 w-20 top-24 pt-2'>{new Date().toLocaleDateString('id-ID')}</div>
+            <svg className='absolute h-20 left-52 top-16' ref={inputRef} />
+            <div className='absolute right-12' style={{ bottom: "85px" }}>{(parseInt(gt) + parseInt(ongkos)).toLocaleString("id-ID")}</div>
+            <div className='absolute right-12' style={{ bottom: "117px" }}>{parseInt(ongkos).toLocaleString("id-ID")}</div>
+            <div className='absolute right-12' style={{ bottom: "55px" }}>{parseInt(dp).toLocaleString("id-ID")}</div>
+            <div className='absolute right-12' style={{ bottom: "25px" }}>{parseInt(sisa).toLocaleString("id-ID")}</div>
+            <div className='absolute top-48' style={{ width: "690px", left: "213px" }}>{notaRow()}</div>
+        </div>}
+
+        <div className='bg-white shadow-lg mt-2 p-5 no-print w-11/12 mx-auto'>
             <div className='border-b font-bold mb-3'>Pembayaran</div>
             <div className='grid grid-cols-3 gap-3 font-bold border-b py-1 bg-slate-50'>
                 <div>Jenis</div>
@@ -297,14 +417,43 @@ function PrintNota() {
             </div>
             {PaymentRows()}
         </div>
-        <div className='bg-white shadow-lg mt-2 p-5 no-print'>
+        <div className='bg-white shadow-lg mt-2 p-5 no-print w-11/12 mx-auto'>
             <div className='border-b font-bold mb-3'>Catatan</div>
             <div>{catatan}</div>
         </div>
-        <div className='bg-white shadow-lg mt-2 p-5 no-print'>
+        <div className='bg-white shadow-lg mt-2 p-5 no-print w-11/12 mx-auto'>
             <div className='border-b font-bold mb-3'>Foto</div>
             <div><img src={foto} className='w-52' /></div>
         </div>
+        {editedNotaAttribute && <div className='border-l-8 border-yellow-500 border-2 rounded-md shadow-lg mt-2 p-5 no-print w-11/12 mx-auto text-sm'>
+            <div className='border-b font-bold mb-3'>Nota Sebelumnya</div>
+            <div className='text-sm text-right'>Diedit oleh:</div>
+
+            <div className='border-b font-bold'>
+                Total: {parseInt(editedNotaAttribute?.total).toLocaleString("id-ID")}
+            </div>
+            <div className='mt-5'>
+                <div className='font-bold'>Item</div>
+                <div className='grid grid-cols-6 gap-3 border-b border-t font-bold'>
+                    <div>Qty</div>
+                    <div>Nama</div>
+                    <div>Berat</div>
+                    <div>Kadar</div>
+                    <div>Harga</div>
+                    <div>Total</div>
+                </div>
+                {originalItemRow()}
+            </div>
+            <div className='mt-5'>
+                <div className='font-bold'>Pembayaran</div>
+                <div className='grid grid-cols-3 gap-3 border-b border-t font-bold'>
+                    <div>Nama</div>
+                    <div>Nominal</div>
+                    <div>Kembali</div>
+                </div>
+                {originalPaymentRow()}
+            </div>
+        </div>}
     </div>;
 }
 

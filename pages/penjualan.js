@@ -1,6 +1,7 @@
 import { React, useState, useEffect, useRef, useCallback } from 'react'
 import { FaPhoneAlt, FaPlusSquare, FaWindowClose, FaExchangeAlt, FaExpandAlt, FaClipboardCheck, FaFileInvoiceDollar, FaCompressAlt } from "react-icons/fa"
 import AsyncSelect from 'react-select/async'
+import Select from 'react-select'
 import axios from 'axios'
 import nookies from 'nookies'
 import ItemRow from '../components/item-row'
@@ -11,6 +12,11 @@ import PaymentRow from '../components/payment-row'
 import Router from 'next/router'
 import Webcam from "react-webcam"
 import { useBarcode } from '@createnextapp/react-barcode'
+import CreatableSelect from 'react-select/creatable'
+import NumberFormat from 'react-number-format'
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
+
 
 function Penjualan() {
 
@@ -21,7 +27,7 @@ function Penjualan() {
     const [grand, setGrand] = useState(0);
     const [customer, setCustomer] = useState({});
     const [userData, setUserData] = useState({});
-    const [selectedCustomer, setSelectedCustomer] = useState({});
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [selectedNota, setSelectedNota] = useState({});
     const [showPreview, setShowPreview] = useState(false);
     const [option, setOption] = useState([]);
@@ -33,17 +39,20 @@ function Penjualan() {
     const [transactionTypeOption, setTransactionTypeOption] = useState([]);
     const [showAdd, setShowAdd] = useState(false);
     const [nomorNota, setNomorNota] = useState("123");
-    const [payments, setPayments] = useState({});
+    const [payments, setPayments] = useState(null);
     const [trxType, setTrxType] = useState("jual");
-    const [catatan, setCatatan] = useState("");
+    const [catatan, setCatatan] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [capturedImage, setCapturedImage] = useState("");
+    const [capturedImage, setCapturedImage] = useState(null);
     const [showWebcam, setShowWebcam] = useState(false);
     const [fileSize, setFileSize] = useState(0);
-    const [ongkos, setOngkos] = useState("");
-    const [dp, setDp] = useState("");
-    const [tipeDp, setTipeDp] = useState("");
-    const [sisaPelunasan, setSisaPelunasan] = useState("");
+    const [ongkos, setOngkos] = useState(null);
+    const [dp, setDp] = useState(null);
+    const [tipeDp, setTipeDp] = useState(null);
+    const [gramDp, setGramDp] = useState(null);
+    const [sisaPelunasan, setSisaPelunasan] = useState(null);
+    const [change, setChange] = useState(0);
+    const [selesaiDate, setSelesaiDate] = useState(null);
 
     useEffect(() => {
         const cks = nookies.get(null);
@@ -54,11 +63,19 @@ function Penjualan() {
         getTransactionType();
         getPaymentType();
         noNota();
+        getCust();
     }, [])
 
-    const { inputRef } = useBarcode({
-        value: nomorNota
-    });
+    // const { inputRef } = useBarcode({
+    //     value: nomorNota,
+    //     options: {
+    //         displayValue: false,
+    //         margin: '0',
+    //         height: '50',
+    //         background: 'transparent',
+    //     }
+    // });
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
     async function noNota() {
         var c = await axios.get(`/api/nota/count`);
@@ -174,6 +191,10 @@ function Penjualan() {
         setUserData({ ...userData, [name]: value });
     }
 
+    function changeGramDp(e) {
+        setDp(e.target.value * total["1"]["harga"])
+    }
+
 
     function add() {
         setCount(count + 1);
@@ -250,8 +271,8 @@ function Penjualan() {
     }
 
 
-    const getCust = async (search) => {
-        let size = 100;
+    const getCust = async (search = "", second = false) => {
+        let size = 5;
         let arr = [];
         try {
             var res = await axios.get(`/api/customer/get?size=${size}&search=${search}`);
@@ -260,6 +281,11 @@ function Penjualan() {
             });
             setOption(arr);
             setCustomer(res.data);
+            if (second) {
+                setSelectedCustomer(arr[0]);
+            }
+
+            //console.log(res.data.data[0]);
             return;
         } catch (err) {
             console.log(err);
@@ -272,7 +298,8 @@ function Penjualan() {
         try {
             var res = await axios.post('/api/customer/create', userData);
             toast.success("Customer berhasil ditambahkan");
-            //getCust(cookies.jwt);
+            await getCust("", true);
+
             setShowAdd(false);
         } catch (err) {
             console.log(err);
@@ -304,7 +331,45 @@ function Penjualan() {
     }
 
     async function saveNota() {
-        var result = confirm("Nota tidak dapat diedit setelah disimpan, pastikan semua data sudah benar");
+        if (trxType == "jual" && selectedCustomer == null) {
+            alert("Harap memilih customer");
+            return;
+        }
+        if (trxType == "jual" && (grand == null || grand == 0 || isNaN(grand))) {
+            alert("Harap mengisi item barang");
+            return;
+        }
+        if (trxType == "pesanan" && dp == null) {
+            alert("Harap memasukan DP");
+            return;
+        }
+        if (trxType == "pesanan" && ongkos == null) {
+            alert("Harap memasukan ongkos");
+            return;
+        }
+        if (trxType == "pesanan" && selesaiDate == null) {
+            alert("Harap memilih tanggal selesai");
+            return;
+        }
+        if (trxType == "jual" && catatan == null) {
+            alert("Harap masukan catatan");
+            return;
+        }
+        if (trxType != "pesanan" && trxType != "pelunasan" && capturedImage == null) {
+            alert("Harap ambil gambar barang");
+            return;
+        }
+        if (payments == null) {
+            alert("Harap memilih metode pembayaran");
+            return;
+        }
+
+        if (change > 0) {
+            alert("Nominal pembayaran tidak sesuai");
+            return;
+        }
+
+        var result = confirm("Pastikan semua data sudah benar");
         if (!result) {
             return;
         }
@@ -315,19 +380,25 @@ function Penjualan() {
                     item: total,
                     customer: selectedCustomer
                 }),
-                customer: `${selectedCustomer.nama}-${selectedCustomer.no_hp}`,
+                customer: selectedCustomer ? `${selectedCustomer.value.nama}-${selectedCustomer.value.no_hp}` : '',
                 total: grand.toString(),
                 nomor_nota: nomorNota,
                 tipe: trxType,
-                catatan: catatan,
-                foto: capturedImage,
-                dp: dp,
-                tipe_dp: tipeDp,
-                ongkos: ongkos,
-                sisa_pelunasan: sisaPelunasan,
+                catatan: catatan != null ? catatan : "",
+                foto: capturedImage ?? "",
+                dp: dp != null ? dp.toString() : "",
+                tipe_dp: tipeDp ?? "",
+                ongkos: ongkos != null ? ongkos.toString() : "",
+                sisa_pelunasan: sisaPelunasan != null ? sisaPelunasan.toString() : "",
+                tanggal_selesai: selesaiDate ?? "",
                 nota_sebelum: selectedNota.id ?? "",
             });
-            Router.push(`/print/${res.data.id}`);
+            if (trxType == "beli") {
+                Router.push(`/nota`);
+            } else {
+                Router.push(`/print/${res.data.id}`);
+            }
+
             //getCust(cookies.jwt);
         } catch (err) {
             console.log(err);
@@ -335,15 +406,40 @@ function Penjualan() {
     }
 
     function handlePaymentChangeValue(e) {
-        const newObj = Object.assign({}, payments, e);
-        console.log(newObj);
-        setPayments(newObj);
+        if (parseInt(e[Object.keys(e)[0]]["nominal"]) > 0) {
+            var chg = 0;
+            const newObj = Object.assign({}, payments, e);
+            setPayments(newObj);
+            for (const key in newObj) {
+                if (Object.hasOwnProperty.call(newObj, key)) {
+                    const el = newObj[key];
+                    chg = chg + parseInt(el.nominal);
+                }
+            }
+
+            if (trxType == "pesanan") {
+                if (!isNaN(grand) && sisaPelunasan != null) {
+                    chg = (grand + parseInt(ongkos)) - sisaPelunasan - chg;
+                } else {
+                    chg = 0;
+                }
+            } else {
+                if (!isNaN(grand)) {
+                    chg = grand - chg;
+                } else {
+                    chg = 0;
+                }
+            }
+
+            setChange(chg);
+        }
+
     }
 
     function paymentRows() {
         var arr = [];
         for (let index = 0; index < payCount; index++) {
-            arr.push(<PaymentRow key={index} number={index + 1} onChangeValue={handlePaymentChangeValue} options={paymentTypeOption} />);
+            arr.push(<PaymentRow change={change} key={index} number={index + 1} onChangeValue={handlePaymentChangeValue} options={paymentTypeOption} />);
         }
 
         return arr;
@@ -449,8 +545,8 @@ function Penjualan() {
         return kaLimat + "Rupiah";
     }
 
-    const getNota = async (search) => {
-        let size = 100;
+    const getNota = async (search = "") => {
+        let size = 5;
         let arr = [];
         try {
             var res = await axios.get(`/api/nota/get?size=${size}&search=${search}`);
@@ -467,18 +563,16 @@ function Penjualan() {
         }
     }
 
-    async function loadOptions(inputValue, callback) {
-        await getCust(inputValue);
-        callback(option);
+    function loadOptions(inputValue) {
+        getCust(inputValue);
     }
 
-    async function loadNotaOptions(inputValue, callback) {
-        await getNota(inputValue);
-        callback(notaOption);
+    function loadNotaOptions(inputValue) {
+        getNota(inputValue);
     }
 
     function handleInputChange(e) {
-        setSelectedCustomer(e.value)
+        setSelectedCustomer(e)
     }
 
     function handleNotaInputChange(e) {
@@ -496,14 +590,13 @@ function Penjualan() {
                 const el = object[key];
                 if (trxType == "pelunasan") {
                     arr.push(
-                        <div key={key} className='border grid grid-cols-7 gap-3 p-3 bg-white text-xs'>
+                        <div key={key} className='border grid grid-cols-6 gap-3 p-3 bg-white text-xs'>
                             <div>{el.qty}</div>
                             <div>{el.nama}</div>
                             <div>{el.jenis}</div>
                             <div>{el.berat}</div>
                             <div>{el.kadar}</div>
                             <div>{el.harga}</div>
-                            <div>{el.ongkos}</div>
                         </div>
                     )
                 } else {
@@ -527,7 +620,7 @@ function Penjualan() {
 
     return (
         <div className='w-full'>
-            <div className='flex justify-start my-5 border p-5 shadow-lg'>
+            <div className='flex justify-start my-5 border p-5 shadow-lg no-print'>
                 <div className="w-28 mr-3">
                     <div onClick={() => changeType("jual")} className={`text-center rounded-md flex justify-center p-5 cursor-pointer ${trxType == "jual" ? "bg-green-500" : "bg-gray-300"} mb-2`}>
                         <FaExpandAlt className='text-white' size={20} />
@@ -573,25 +666,25 @@ function Penjualan() {
                     <div className={`text-center font-semibold ${trxType == "tukar kurang" ? "text-green-500" : "text-slate-400"}`}>TK</div>
                 </div>
             </div>
-            <div className='input-order border p-3 bg-white'>
+            <div className='input-order border p-3 bg-white no-print'>
                 {trxType != "pelunasan" && <div>
                     <label className='flex items-center'>Pilih Customer <FaPlusSquare onClick={() => setShowAdd(true)} className='ml-2 cursor-pointer' /></label>
-                    <AsyncSelect
+                    <CreatableSelect
                         id="customer-select" instanceId="customer-select"
-                        cacheOptions
-                        loadOptions={loadOptions}
-                        defaultOptions={false}
+                        options={option}
+                        value={selectedCustomer}
+                        defaultValue={selectedCustomer}
+                        onInputChange={e => loadOptions(e)}
                         onChange={(e) => handleInputChange(e)}
                     />
                 </div>}
 
                 {(trxType == "beli" || trxType == "pelunasan" || trxType == "tukar tambah" || trxType == "tukar kurang") && <div>
                     <label className='flex items-center mt-2'>Pilih/Scan Nota Sebelumnya</label>
-                    <AsyncSelect
+                    <CreatableSelect
                         id="nota-select" instanceId="nota-select"
-                        cacheOptions
-                        loadOptions={loadNotaOptions}
-                        defaultOptions={false}
+                        options={notaOption}
+                        onInputChange={e => loadNotaOptions(e)}
                         onChange={(e) => handleNotaInputChange(e)}
                     />
                 </div>}
@@ -610,14 +703,13 @@ function Penjualan() {
 
                 {trxType == "pelunasan" && selectedNota.object && <div className='p-3 border-orange-500 border-2 mt-3 bg-sky-50'>
                     <div className='text-xs font-bold mb-1'>Nota Sebelumnya</div>
-                    <div className='grid grid-cols-7 gap-3 p-3 bg-gray-50 text-xs border'>
+                    <div className='grid grid-cols-6 gap-3 p-3 bg-gray-50 text-xs border'>
                         <div>Qty</div>
                         <div>Nama</div>
                         <div>Jenis</div>
                         <div>Berat</div>
                         <div>Kadar</div>
                         <div>Harga</div>
-                        <div>Ongkos</div>
                     </div>
                     {previousNotaItems()}
                     <div className='text-sm mt-2 w-full p-3 bg-white'>Sisa Pelunasan: <span className='font-bold'>Rp {parseInt(selectedNota.sisa_pelunasan).toLocaleString("id-ID")}</span></div>
@@ -649,47 +741,68 @@ function Penjualan() {
                     </div>
 
                 </div>}
-                {trxType != "pelunasan" && <div className='border bg-white w-full mt-1'>
+                {trxType != "pelunasan" && <div className='border w-full bg-white mt-1'>
                     <table className='w-full bg-white'>
                         <thead>
                             <tr>
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">No</th>
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Jenis Emas</th>
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Berat</th>
-                                {(trxType == "beli" || trxType == "tukar tambah") && <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Harga Lama/gr</th>}
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Kadar</th>
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Harga/gr</th>
-                                {trxType == "beli" && <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Potongan</th>}
-                                {trxType == "pesanan" && <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Ongkos</th>}
-                                <th className="py-3 px-2 border-b border-gray-200 text-center text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-20">Qty</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-28">Jenis Emas</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-48">Nama Barang</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Berat</th>
+                                {(trxType == "beli" || trxType == "tukar tambah") && <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Harga Lama/gr</th>}
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-28">Kadar</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Harga/gr</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-right text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {rows()}
                             <tr>
-                                <td className='py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-slate-900 uppercase tracking-wider' colSpan={2}>Grand Total</td>
+                                <td className='py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-slate-900 uppercase tracking-wider' colSpan={2}>Total</td>
                                 <td className='py-3 px-2 border-b border-gray-200 text-right text-xs leading-4 font-medium text-slate-900 uppercase tracking-wider' colSpan={8}>{grand.toLocaleString("id-ID")}</td>
                             </tr>
                         </tbody>
                     </table>
+
                     <div className='p-3 bg-gray-50 mt-3 m-2'>
-                        {trxType == "pesanan" && <div className='grid grid-cols-3 gap-3 mb-3'>
+                        {trxType == "pesanan" && total["1"] != "undefined" && <div className='grid grid-cols-3 gap-3 mb-3'>
+                            <div className=''>
+                                <div className='font-bold text-xs mb-2'>Ongkos</div>
+                                <NumberFormat isNumericString={true} thousandSeparator={"."} decimalSeparator=',' prefix={'Rp'} defaultValue={null} className='p-2 border w-full' placeholder='Ongkos' onValueChange={(values) => setOngkos(values.value)} />
+                            </div>
                             <div className=''>
                                 <div className='font-bold text-xs mb-2'>Tipe DP</div>
-                                <select onChange={(e) => setTipeDp(e.target.value)} className='w-full p-2 border'>
+                                <select defaultValue={null} onChange={(e) => setTipeDp(e.target.value)} className='w-full p-2 border'>
+                                    <option value={null}>Pilih</option>
                                     <option>Gram</option>
                                     <option>Nominal</option>
                                 </select>
                             </div>
-                            <div className=''>
-                                <div className='font-bold text-xs mb-2'>DP</div>
-                                <input type="number" className='p-2 border w-full' placeholder='Down Payment' onChange={(e) => setDp(e.target.value)} />
-                            </div>
-                            <div className=''>
+                            {tipeDp == "Nominal" && <div className=''>
+                                <div className='font-bold text-xs mb-2'>Nominal DP</div>
+                                <NumberFormat isNumericString={true} thousandSeparator={"."} decimalSeparator=',' prefix={'Rp'} defaultValue={null} className='p-2 border w-full' placeholder='Down Payment' onValueChange={(values) => setDp(values.value)} />
+                            </div>}
+                            {tipeDp == "Gram" && <div className=''>
+                                <div className='font-bold text-xs mb-2'>Input Gram</div>
+                                <input type="number" className='p-2 border w-full' placeholder='DP Gram' defaultValue={null} onChange={(e) => changeGramDp(e)} />
+                            </div>}
+                            {tipeDp == "Gram" && <div className=''>
+                                <div className='font-bold text-xs mb-2'>Nominal DP</div>
+                                <div className='p-2 w-full border bg-gray-50'>{dp?.toLocaleString("id-ID")}</div>
+                            </div>}
+                            {tipeDp == "Gram" && <div className=''>
                                 <div className='font-bold text-xs mb-2'>Sisa Pelunasan</div>
-                                <input type="number" className='p-2 border w-full' placeholder='Sisa Pelunasan' onChange={(e) => setSisaPelunasan(e.target.value)} />
+                                <NumberFormat isNumericString={true} thousandSeparator={"."} decimalSeparator=',' prefix={'Rp'} className='p-2 border w-full' placeholder='Sisa Pelunasan' value={grand + parseInt(ongkos) - dp} onValueChange={(values) => setSisaPelunasan(values.value)} disabled />
+                            </div>}
+                            {tipeDp == "Nominal" && <div className=''>
+                                <div className='font-bold text-xs mb-2'>Sisa Pelunasan</div>
+                                <NumberFormat isNumericString={true} thousandSeparator={"."} decimalSeparator=',' prefix={'Rp'} className='p-2 border w-full' placeholder='Sisa Pelunasan' value={grand + parseInt(ongkos) - dp} onValueChange={(values) => setSisaPelunasan(values.value)} disabled />
+                            </div>}
+                            <div>
+                                <div className='font-bold text-xs mb-2'>Tanggal Selesai</div>
+                                <DatePicker className='p-2 w-full border' selected={selesaiDate} onChange={(date) => setSelesaiDate(date)} />
+
                             </div>
 
                         </div>}
@@ -699,7 +812,7 @@ function Penjualan() {
                     </div>
 
 
-                    <div className='p-3 bg-gray-50 mt-3 m-2'>
+                    <div className='p-3 bg-gray-50 mt-3 m-2 no-print'>
                         <div className='font-bold text-xs mb-2'>Ambil Gambar</div>
                         <div className='flex items-center justify-between'>
                             <input className='border py-2 px-6' type="file" onChange={(e) => onFileChange(e)} />
@@ -716,8 +829,8 @@ function Penjualan() {
                     </div>
 
                 </div>}
-                <div className='flex justify-between items-center text-sm mt-5 mb-1'>
-                    <span>Pembayaran</span>
+                <div className='flex justify-between items-center text-sm mt-5 mb-1 no-print'>
+                    <div>Pembayaran <span className='text-orange-600'>{change != "NaN" && change > 0 ? `(Kurang Rp ${change.toLocaleString("id-ID")})` : ""}</span></div>
                     <div className='flex justify-end'>
                         <button onClick={() => minPay()} className='bg-red-500 mr-1 text-white rounded h-5 w-5 flex items-center justify-center font-bold text-xs'>-</button>
                         <button onClick={() => addPay()} className='bg-green-500 text-white rounded h-5 w-5 flex items-center justify-center font-bold text-xs'>+</button>
@@ -727,110 +840,8 @@ function Penjualan() {
 
             </div>
 
-            {trxType != "pelunasan" && <div>
-                <div className='text-lg font-bold mt-5 text-slate-600'>Preview Nota</div>
-
-                <div className='bg-white border w-full mt-1 p-5 shadow-lg relative'>
-                    <div className='flex justify-between text-center mb-3'>
-                        <div className='w-4/12 text-slate-600'>
-                            <img src='img/logo.png' className='w-36 mb-2 mx-auto' alt='logo' />
-                            <p className='text-xs bg-amber-400 text-white uppercase font-bold'>jual beli & pemesanan</p>
-                            <div className='text-xs flex items-center justify-center'>Jl Mahakan No.12 Jakarta Selatan <FaPhoneAlt size={8} className='mx-1' /> 0819928277</div>
-                        </div>
-                        <div className='text-left text-xs'>
-                            <p>No: <span className='font-bold text-amber-600'>{nomorNota}</span></p>
-                            <p>Jumat, 14 Januari 2022</p>
-                            <p>Pelanggan: {selectedCustomer.nama != undefined ? selectedCustomer.nama : ""}</p>
-                            <p> {selectedCustomer.nama != undefined ? selectedCustomer.alamat : ""}</p>
-                            <p> {selectedCustomer.nama != undefined ? selectedCustomer.no_hp : ""}</p>
-
-                        </div>
-                        <div className='w-40 absolute top-0 right-52'>
-                            <svg className='w-full' ref={inputRef} />
-                        </div>
-                    </div>
-
-                    {trxType == "jual" && <div className='w-full border-t flex text-left text-xs font-bold py-2 border-b bg-amber-400 text-white'>
-                        <div className='ml-2 w-2/12'>Banyaknya</div>
-                        <div className='ml-2 w-4/12'>Nama Barang</div>
-                        <div className='w-2/12'>Berat</div>
-                        <div className='w-2/12'>Kadar</div>
-                        <div className='w-2/12'>Harga Per Gram</div>
-                        <div className='w-2/12 text-right mr-2'>Total Harga</div>
-                    </div>}
-                    {trxType == "tukar kurang" && <div className='w-full border-t flex text-left text-xs font-bold py-2 border-b bg-amber-400 text-white'>
-                        <div className='ml-2 w-2/12'>Banyaknya</div>
-                        <div className='ml-2 w-4/12'>Nama Barang</div>
-                        <div className='w-2/12'>Berat</div>
-                        <div className='w-2/12'>Kadar</div>
-                        <div className='w-2/12'>Harga Per Gram</div>
-                        <div className='w-2/12 text-right mr-2'>Total Harga</div>
-                    </div>}
-                    {trxType == "beli" && <div className='w-full border-t flex text-left text-xs font-bold py-2 border-b bg-amber-400 text-white'>
-                        <div className='ml-2 w-2/12'>Banyaknya</div>
-                        <div className='ml-2 w-2/12'>Nama Barang</div>
-                        <div className='w-1/12'>Berat</div>
-                        <div className='w-2/12'>Harga Lama</div>
-                        <div className='w-1/12'>Kadar</div>
-                        <div className='w-2/12'>Harga Per Gram</div>
-                        <div className='w-1/12'>potongan</div>
-                        <div className='w-1/12 text-right mr-2'>Total Harga</div>
-                    </div>}
-                    {trxType == "tukar tambah" && <div className='w-full border-t flex text-left text-xs font-bold py-2 border-b bg-amber-400 text-white'>
-                        <div className='ml-2 w-2/12'>Banyaknya</div>
-                        <div className='ml-2 w-2/12'>Nama Barang</div>
-                        <div className='w-1/12'>Berat</div>
-                        <div className='w-2/12'>Harga Lama</div>
-                        <div className='w-1/12'>Kadar</div>
-                        <div className='w-2/12'>Harga Per Gram</div>
-                        <div className='w-1/12 text-right mr-2'>Total Harga</div>
-                    </div>}
-                    {trxType == "pesanan" && <div className='w-full border-t flex text-left text-xs font-bold py-2 border-b bg-amber-400 text-white'>
-                        <div className='ml-2 w-2/12'>Banyaknya</div>
-                        <div className='ml-2 w-2/12'>Nama Barang</div>
-                        <div className='w-1/12'>Berat</div>
-                        <div className='w-2/12'>Harga Sblm</div>
-                        <div className='w-1/12'>Kadar</div>
-                        <div className='w-2/12'>Harga Per Gram</div>
-                        <div className='w-1/12'>Ongkos</div>
-                        <div className='w-1/12 text-right mr-2'>Total Harga</div>
-                    </div>}
-                    <div className='w-full h-36 border-b'>
-                        {notaRow()}
-                    </div>
-                    <div className='w-full flex text-left text-xs font-bold py-2'>
-                        <div className='ml-2 w-4/12 font-bold'>Grand Total</div>
-                        <div className='w-2/12'></div>
-                        <div className='w-2/12'></div>
-                        <div className='w-2/12'></div>
-                        <div className='mr-2 w-2/12 font-bold text-right'>{grand.toLocaleString("id-ID")}</div>
-                    </div>
-                    <div className='w-full flex text-left text-xs font-bold py-2 bg-gray-100'>
-                        <div className='ml-2 w-4/12 font-bold'>Terbilang</div>
-                        <div className='mr-2 w-8/12 font-bold text-right'>{terbilang(grand)}</div>
-                    </div>
-                    <div className='flex justify-between'>
-                        <div className='w-5/12 p-2 mt-3'>
-                            <p className='font-bold text-xs uppercase'>Perhatian</p>
-                            <ul className='text-xs'>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                                <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit</li>
-                            </ul>
-                        </div>
-                        <div className='w-3/12 p-2 mt-3 text-center flex flex-col justify-between'>
-                            <p className='font-bold text-xs'>Hormat Kami</p>
-                            <p className='font-bold text-xs'>Toko Mas Agung Jaya</p>
-
-                        </div>
-                    </div>
-                </div>
-            </div>}
-
             <div className='w-full flex justify-end mt-2'>
-                <button onClick={() => saveNota()} className='rounded p-2 w-52 h-10 mt-2 bg-green-500 text-white'>Save & Print</button>
-
+                <button onClick={() => saveNota()} className='rounded p-2 w-52 h-10 mt-2 bg-green-500 text-white'>Simpan</button>
             </div>
 
         </div>

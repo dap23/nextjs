@@ -27,19 +27,7 @@ function ItemRow(props) {
         if (!inputData) {
             return 0;
         }
-        if (props.trxType == "jual") {
-            return inputData.qty * inputData.harga * inputData.berat;
-        } else if (props.trxType == "beli") {
-            return (inputData.qty * inputData.harga * inputData.berat) + parseInt(inputData.potongan);
-        } else if (props.trxType == "pesanan") {
-            return (inputData.qty * inputData.harga * inputData.berat) + parseInt(inputData.ongkos);
-        } else if (props.trxType == "pelunasan") {
-            return (inputData.qty * inputData.harga * inputData.berat);
-        } else if (props.trxType == "tukar tambah") {
-            return (inputData.qty * inputData.harga * inputData.berat);
-        } else if (props.trxType == "tukar kurang") {
-            return (inputData.qty * inputData.harga * inputData.berat);
-        }
+        return inputData.qty * inputData.harga * inputData.berat;
     }
 
     function handleSelectChange(e) {
@@ -51,6 +39,10 @@ function ItemRow(props) {
             setSelectedGoldName(e);
         }
 
+        if (name == "jenis") {
+            getGoldName(false, value.id);
+        }
+
         if (value?.name != undefined) {
             val = value.name;
         } else if (value?.nama != undefined) {
@@ -60,15 +52,18 @@ function ItemRow(props) {
             harga = value.Harga;
         }
 
+        console.log({ [name]: val });
+
 
         setInputData({ ...inputData, [name]: val, harga: harga != 0 ? harga : inputData.harga });
     }
 
-    async function getGoldName(second = false) {
+    async function getGoldName(second = false, typeId = "") {
         try {
             let arr = [];
             let size = 100;
-            var res = await axios.get(`/api/gold-name/get?size=${size}`);
+            let tid = typeId;
+            var res = await axios.get(`/api/gold-name/get?size=${size}&typeId=${tid}`);
             res.data.data.forEach(el => {
                 arr.push({ value: el, label: `${el.name}` });
             });
@@ -105,10 +100,10 @@ function ItemRow(props) {
 
     return (
         <tr className='text-xs'>
-            <td className="py-4 px-2 text-center whitespace-no-wrap border-b border-gray-200">
+            <td className="py-4 px-2 text-left whitespace-no-wrap border-b border-gray-200">
                 {props.number}
             </td>
-            <td className="text-center py-4 whitespace-no-wrap border-b border-gray-200">
+            <td className="text-left py-4 whitespace-no-wrap border-b border-gray-200">
                 <input onChange={(e) => handleChange(e)} name='qty' min={1} type="number" className='rounded p-2 w-full h-10 mr-2' placeholder='Qty' />
             </td>
             <td className="py-4 px-2 whitespace-no-wrap border-b border-gray-200">
@@ -117,8 +112,6 @@ function ItemRow(props) {
             <td className="py-4 px-2 whitespace-no-wrap border-b border-gray-200">
                 <CreatableSelect
                     id="gold-name" instanceId="gold-name"
-                    isClearable
-
                     value={selectedGoldName}
                     onChange={(e) => handleSelectChange({ ...e, name: "nama" })}
                     onCreateOption={createBarang}
@@ -137,13 +130,7 @@ function ItemRow(props) {
             <td className="py-4 px-2 whitespace-no-wrap border-b border-gray-200">
                 <p>{inputData.harga}</p>
             </td>
-            {props.trxType == "beli" && <td className="text-center py-4 whitespace-no-wrap border-b border-gray-200">
-                <input onChange={(e) => handleChange(e)} name='potongan' type="number" className='rounded p-2 w-full h-10 mr-2' placeholder='Potongan' />
-            </td>}
-            {props.trxType == "pesanan" && <td className="text-center py-4 whitespace-no-wrap border-b border-gray-200">
-                <input onChange={(e) => handleChange(e)} name='ongkos' type="number" className='rounded p-2 w-full h-10 mr-2' placeholder='Ongkos' />
-            </td>}
-            <td className="py-4 px-2 whitespace-no-wrap border-b border-gray-200">{getTotal().toLocaleString("id-ID")}</td>
+            <td className="py-4 px-2 whitespace-no-wrap border-b border-gray-200 text-right">{getTotal().toLocaleString("id-ID")}</td>
 
         </tr>
     )
