@@ -20,15 +20,17 @@ function ItemRowEdit(props) {
         getGoldName();
     }, []);
 
-    if (item[number]) {
-        useEffect(() => {
+
+    useEffect(() => {
+        if (item[number]) {
             setTimeout(function () {
                 setInputData({ ...inputData, nama: item[number]["nama"], qty: item[number]["qty"], kadar: item[number]["harga"], berat: item[number]["berat"], kadar: item[number]["kadar"], harga: item[number]["harga"] });
 
 
             }, 1000 * parseInt(props.number));
-        }, [item[number]["qty"], item[number]["harga"], item[number]["berat"], item[number]["berat"]])
-    }
+        }
+    }, [item[number]["qty"], item[number]["harga"], item[number]["berat"], item[number]["berat"]])
+
 
 
 
