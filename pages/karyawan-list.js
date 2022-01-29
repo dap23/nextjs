@@ -32,7 +32,15 @@ function Customer() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setUserData({ ...userData, [name]: value });
+        let obj = { ...userData };
+        obj = { ...obj, [name]: value };
+
+        //other
+        if (name == "jenis_barang_hutang") {
+            obj = { ...obj, nominal_uang_hutang: "", jenis_barang_other: "" };
+        }
+
+        setUserData(obj);
     }
 
     const handleUpdateChange = (e) => {
@@ -93,6 +101,9 @@ function Customer() {
             toast.success(`${res_name} berhasil ditambahkan`);
             setState(new Date());
             getCust();
+            setUserData({});
+            setTanggalMasuk("");
+            setTanggalKeluar("");
         } catch (err) {
             console.log(err);
         }
@@ -104,6 +115,11 @@ function Customer() {
             var res = await axios.post(`${api_url}create`, { ...editData, tanggal_masuk: tanggalMasuk, tanggal_keluar: tanggalKeluar });
             toast.success(`${res_name} berhasil diedit`);
             getCust();
+            setUserData({});
+            setEditData({});
+            setTanggalMasuk("");
+            setTanggalKeluar("");
+            setState(new Date());
         } catch (err) {
             console.log(err);
         }
@@ -114,8 +130,8 @@ function Customer() {
         try {
             var res = await axios.get(`${api_url}get?id=${id}`);
             setEditData(res.data.data);
-            setTanggalMasuk(res.data.data.tanggal_masuk);
-            setTanggalKeluar(res.data.data.tanggal_keluar);
+            setTanggalMasuk(new Date(res.data.data.tanggal_masuk));
+            setTanggalKeluar(res.data.data.tanggal_keluar != "" ? new Date(res.data.data.tanggal_keluar) : "");
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
             console.log(err);
@@ -155,15 +171,92 @@ function Customer() {
                     <div className='w-full p-3 rounded'>
                         <p className='font-bold text-lg'>Buat {res_name} Baru</p>
                     </div>
-                    <form onSubmit={handleSubmit} key={state}>
-                        <div className='rounded p-3 grid grid-cols-2 gap-3'>
-                            <input onChange={(e) => handleChange(e)} required placeholder='Nama' name="nama" className='p-2 border rounded' />
-                            <input onChange={(e) => handleChange(e)} required placeholder='Alamat' name="alamat" className='p-2 border rounded' />
-                            <input onChange={(e) => handleChange(e)} placeholder='Bagian' name='bagian' className='p-2 border rounded' />
-                            <input onChange={(e) => handleChange(e)} placeholder='Gaji' name='gaji' className='p-2 border rounded' />
-                            <input onChange={(e) => handleChange(e)} placeholder='Password' name='password' className='p-2 border rounded' />
-                            <DatePicker placeholderText="Tanggal Masuk" className='p-2 w-full border' onChange={(date) => setTanggalMasuk(date)} />
-                            <DatePicker placeholderText="Tanggal Keluar" className='p-2 w-full border' onChange={(date) => setTanggalKeluar(date)} />
+                    <form key={state} onSubmit={handleSubmit}>
+                        <div className='w-full border border-green-500 border-l-4 bg-green-100 text-sm px-3 py-1 font-bold my-3'>Data Umum</div>
+                        <div className='rounded p-3 grid grid-cols-3 gap-3'>
+                            <div>
+                                <div className='text-sm'>Nama</div>
+                                <input onChange={(e) => handleChange(e)} required placeholder='Nama' name="nama" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Alamat</div>
+                                <input onChange={(e) => handleChange(e)} required placeholder='Alamat' name="alamat" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Bagian</div>
+                                <input onChange={(e) => handleChange(e)} placeholder='Bagian' name='bagian' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Password</div>
+                                <input onChange={(e) => handleChange(e)} placeholder='Password' name='password' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Tanggal Masuk</div>
+                                <DatePicker selected={tanggalMasuk} placeholderText="Tanggal Masuk" className='p-2 w-full border' onChange={(date) => setTanggalMasuk(date)} />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Tanggal Keluar</div>
+                                <DatePicker selected={tanggalKeluar} placeholderText="Tanggal Keluar" className='p-2 w-full border' onChange={(date) => setTanggalKeluar(date)} />
+                            </div>
+                        </div>
+                        <div className='w-full border border-sky-500 border-l-4 bg-sky-100 text-sm px-3 py-1 font-bold my-3'>Gaji</div>
+                        <div className='rounded p-3 grid grid-cols-3 gap-3'>
+                            <div>
+                                <div className='text-sm'>Jumlah Gaji</div>
+                                <input onChange={(e) => handleChange(e)} required placeholder='Gaji' name="gaji" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>PPH</div>
+                                <input onChange={(e) => handleChange(e)} required placeholder='PPH' name="pph" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Potongan</div>
+                                <input onChange={(e) => handleChange(e)} placeholder='Potongan' name='potongan_gaji' className='p-2 border rounded w-full' />
+                            </div>
+                        </div>
+                        <div className='w-full border border-orange-500 border-l-4 bg-orange-100 text-sm px-3 py-1 font-bold my-3'>Hutang</div>
+                        <div className='rounded p-3 grid grid-cols-3 gap-3'>
+                            <div>
+                                <div className='text-sm'>Jenis Hutang</div>
+                                <input onChange={(e) => handleChange(e)} required placeholder='Jenis Hutang' name="jenis_hutang" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Jenis Barang Hutang</div>
+                                <select name="jenis_barang_hutang" className='w-full p-2 border' onChange={e => handleChange(e)}>
+                                    <option>Emas</option>
+                                    <option>Motor</option>
+                                    <option>Mobil</option>
+                                    <option>Rumah</option>
+                                    <option>Modal Nikah</option>
+                                    <option>Nominal Uang</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+
+                            {userData?.jenis_barang_hutang == "Other" && <div>
+                                <div className='text-sm'>Other</div>
+                                <input value={userData?.jenis_barang_other || ""} onChange={(e) => handleChange(e)} required placeholder='Masukan jenis barang' name="jenis_barang_other" className='p-2 border rounded w-full' />
+                            </div>}
+                            {userData?.jenis_barang_hutang == "Nominal Uang" && <div>
+                                <div className='text-sm'>Nominal Hutang</div>
+                                <input value={userData?.nominal_uang_hutang || ""} onChange={(e) => handleChange(e)} required placeholder='Masukan nominal hutang' name="nominal_uang_hutang" className='p-2 border rounded w-full' />
+                            </div>}
+                            <div>
+                                <div className='text-sm'>Jumlah Hutang</div>
+                                <input onChange={(e) => handleChange(e)} placeholder='Jumlah Hutang' name='jumlah_hutang' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Nominal Cicilan</div>
+                                <input onChange={(e) => handleChange(e)} placeholder='Nominal Cicilan' name='nominal_cicilan' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Lama Cicilan</div>
+                                <input type="number" onChange={(e) => handleChange(e)} placeholder='Lama Cicilan' name='lama_cicilan' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Sisa Hutang</div>
+                                <input onChange={(e) => handleChange(e)} placeholder='Sisa Hutang' name='sisa_hutang' className='p-2 border rounded w-full' />
+                            </div>
                         </div>
                         <div className='flex justify-end w-full p-3'>
                             <button className='py-2 px-10 border rounded bg-green-400 text-white font-bold'>SIMPAN</button>
@@ -175,20 +268,79 @@ function Customer() {
                     <div className='w-full p-3 rounded'>
                         <div className='font-bold text-lg'>Edit {res_name} <button onClick={() => setEditId(0)} className='text-xs border p-1'>Buat Baru</button></div>
                     </div>
-                    <form onSubmit={handleUpdate}>
-                        <div className='rounded p-3 grid grid-cols-2 gap-3'>
-                            <input onChange={(e) => handleUpdateChange(e)} required placeholder='Nama' value={editData?.nama || ""} name="nama" className='p-2 border rounded' />
-                            <input onChange={(e) => handleUpdateChange(e)} required placeholder='Alamat' value={editData?.alamat || ""} name="alamat" className='p-2 border rounded' />
-                            <input onChange={(e) => handleUpdateChange(e)} placeholder='Bagian' name='bagian' value={editData?.bagian || ""} className='p-2 border rounded' />
-                            <input onChange={(e) => handleUpdateChange(e)} placeholder='Gaji' name='gaji' value={editData?.gaji || ""} className='p-2 border rounded' />
-                            <input onChange={(e) => handleUpdateChange(e)} placeholder='Password' name='password' value={editData?.password || ""} className='p-2 border rounded' />
-                            <DatePicker placeholderText="Tanggal Masuk" className='p-2 w-full border' selected={tanggalMasuk != "" ? new Date(tanggalMasuk) : null} onChange={(date) => setTanggalMasuk(date)} />
-                            <DatePicker placeholderText="Tanggal Keluar" className='p-2 w-full border' selected={tanggalKeluar != "" ? new Date(tanggalKeluar) : null} onChange={(date) => setTanggalKeluar(date)} />
+                    <form key={state} onSubmit={handleUpdate}>
+                        <div className='w-full border border-green-500 border-l-4 bg-green-100 text-sm px-3 py-1 font-bold my-3'>Data Umum</div>
+                        <div className='rounded p-3 grid grid-cols-3 gap-3'>
+                            <div>
+                                <div className='text-sm'>Nama</div>
+                                <input value={editData?.nama || ""} onChange={(e) => handleUpdateChange(e)} required placeholder='Nama' name="nama" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Alamat</div>
+                                <input value={editData?.alamat || ""} onChange={(e) => handleUpdateChange(e)} required placeholder='Alamat' name="alamat" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Bagian</div>
+                                <input value={editData?.bagian || ""} onChange={(e) => handleUpdateChange(e)} placeholder='Bagian' name='bagian' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Password</div>
+                                <input value={editData?.password || ""} onChange={(e) => handleUpdateChange(e)} placeholder='Password' name='password' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Tanggal Masuk</div>
+                                <DatePicker selected={tanggalMasuk} placeholderText="Tanggal Masuk" className='p-2 w-full border' onChange={(date) => setTanggalMasuk(date)} />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Tanggal Keluar</div>
+                                <DatePicker selected={tanggalKeluar} placeholderText="Tanggal Keluar" className='p-2 w-full border' onChange={(date) => setTanggalKeluar(date)} />
+                            </div>
+                        </div>
+                        <div className='w-full border border-sky-500 border-l-4 bg-sky-100 text-sm px-3 py-1 font-bold my-3'>Gaji</div>
+                        <div className='rounded p-3 grid grid-cols-3 gap-3'>
+                            <div>
+                                <div className='text-sm'>Jumlah Gaji</div>
+                                <input value={editData?.gaji || ""} onChange={(e) => handleUpdateChange(e)} required placeholder='Gaji' name="gaji" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>PPH</div>
+                                <input value={editData?.pph || ""} onChange={(e) => handleUpdateChange(e)} required placeholder='PPH' name="pph" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Potongan</div>
+                                <input value={editData?.potongan_gaji || ""} onChange={(e) => handleUpdateChange(e)} placeholder='Potongan' name='potongan_gaji' className='p-2 border rounded w-full' />
+                            </div>
+                        </div>
+                        <div className='w-full border border-orange-500 border-l-4 bg-orange-100 text-sm px-3 py-1 font-bold my-3'>Hutang</div>
+                        <div className='rounded p-3 grid grid-cols-3 gap-3'>
+                            <div>
+                                <div className='text-sm'>Jenis Hutang</div>
+                                <input value={editData?.jenis_hutang || ""} onChange={(e) => handleUpdateChange(e)} required placeholder='Jenis Hutang' name="jenis_hutang" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Jenis Barang Hutang</div>
+                                <input value={editData?.jenis_barang_hutang || ""} onChange={(e) => handleUpdateChange(e)} required placeholder='Jenis Barang Hutang' name="jenis_barang_hutang" className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Jumlah Hutang</div>
+                                <input value={editData?.jumlah_hutang || ""} onChange={(e) => handleUpdateChange(e)} placeholder='Jumlah Hutang' name='jumlah_hutang' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Nominal Cicilan</div>
+                                <input value={editData?.nominal_cicilan || ""} onChange={(e) => handleUpdateChange(e)} placeholder='Nominal Cicilan' name='nominal_cicilan' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Lama Cicilan</div>
+                                <input type="number" value={editData?.lama_cicilan || ""} onChange={(e) => handleUpdateChange(e)} placeholder='Lama Cicilan' name='lama_cicilan' className='p-2 border rounded w-full' />
+                            </div>
+                            <div>
+                                <div className='text-sm'>Sisa Hutang</div>
+                                <input value={editData?.sisa_hutang || ""} onChange={(e) => handleUpdateChange(e)} placeholder='Sisa Hutang' name='sisa_hutang' className='p-2 border rounded w-full' />
+                            </div>
                         </div>
                         <div className='flex justify-end w-full p-3'>
                             <button className='py-2 px-10 border rounded bg-green-400 text-white font-bold'>SIMPAN</button>
                         </div>
-
                     </form>
                 </div>}
 

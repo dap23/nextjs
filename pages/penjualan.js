@@ -1,5 +1,5 @@
 import { React, useState, useEffect, useRef, useCallback } from 'react'
-import { FaPhoneAlt, FaPlusSquare, FaWindowClose, FaExchangeAlt, FaExpandAlt, FaClipboardCheck, FaFileInvoiceDollar, FaCompressAlt } from "react-icons/fa"
+import { FaPhoneAlt, FaPlusSquare, FaWindowClose, FaExchangeAlt, FaExpandAlt, FaClipboardCheck, FaFileInvoiceDollar, FaCompressAlt, FaTimesCircle } from "react-icons/fa"
 import AsyncSelect from 'react-select/async'
 import Select from 'react-select'
 import axios from 'axios'
@@ -16,6 +16,7 @@ import CreatableSelect from 'react-select/creatable'
 import NumberFormat from 'react-number-format'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import StockEmas from './stok-emas'
 
 
 function Penjualan() {
@@ -53,6 +54,9 @@ function Penjualan() {
     const [sisaPelunasan, setSisaPelunasan] = useState(null);
     const [change, setChange] = useState(0);
     const [selesaiDate, setSelesaiDate] = useState(null);
+    const [showEditStock, setShowEditStock] = useState(false);
+    const [state, setState] = useState(new Date());
+    const [toggleCount, setToggleCount] = useState(0);
 
     useEffect(() => {
         const cks = nookies.get(null);
@@ -324,7 +328,7 @@ function Penjualan() {
     function rows() {
         var arr = [];
         for (let index = 0; index < count; index++) {
-            arr.push(<ItemRow trxType={trxType} key={index} number={index + 1} onChangeValue={handleChangeValue} goldNameOption={goldNameOption} goldTypeOption={goldTypeOption} transactionTypeOption={transactionTypeOption} priceOption={priceOption} />);
+            arr.push(<ItemRow trxType={trxType} key={index} toggle={toggleCount} last={count == (index + 1)} state={state} number={index + 1} onChangeValue={handleChangeValue} goldNameOption={goldNameOption} goldTypeOption={goldTypeOption} transactionTypeOption={transactionTypeOption} priceOption={priceOption} />);
         }
 
         return arr;
@@ -567,6 +571,12 @@ function Penjualan() {
         getCust(inputValue);
     }
 
+    function toggleEditStock() {
+        setShowEditStock(!showEditStock);
+        setState(new Date());
+        setToggleCount(toggleCount + 1);
+    }
+
     function loadNotaOptions(inputValue) {
         getNota(inputValue);
     }
@@ -620,6 +630,12 @@ function Penjualan() {
 
     return (
         <div className='w-full'>
+            {showEditStock && <div className='w-full fixed left-0 right-0 top-0 bottom-0 p-10 bg-black/50 z-50 rounded-lg'>
+                <div className='bg-white rounded-lg p-10 relative'>
+                    <FaTimesCircle color='red' onClick={() => toggleEditStock()} className='absolute right-3 top-3 cursor-pointer' size={40} />
+                    <StockEmas />
+                </div>
+            </div>}
             <div className='flex justify-start my-5 border p-5 shadow-lg no-print'>
                 <div className="w-28 mr-3">
                     <div onClick={() => changeType("jual")} className={`text-center rounded-md flex justify-center p-5 cursor-pointer ${trxType == "jual" ? "bg-green-500" : "bg-gray-300"} mb-2`}>
@@ -746,10 +762,11 @@ function Penjualan() {
                         <thead>
                             <tr>
                                 <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">No</th>
-                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-20">Qty</th>
+
                                 <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-28">Jenis Emas</th>
-                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-48">Nama Barang</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-48">Nama Barang <span className='text-ss cursor-pointer lowercase border-orange-500 border-2 text-orange-500 rounded-full px-1' onClick={() => toggleEditStock()}>Ubah</span></th>
                                 <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Berat</th>
+                                <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-20">Qty</th>
                                 {(trxType == "beli" || trxType == "tukar tambah") && <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Harga Lama/gr</th>}
                                 <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider w-28">Kadar</th>
                                 <th className="py-3 px-2 border-b border-gray-200 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Harga/gr</th>

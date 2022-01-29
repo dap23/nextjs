@@ -141,11 +141,12 @@ function StockEmas() {
 
         return custArr.map((el, index) => {
             return (
-                <div key={el.id} className='grid grid-cols-5 gap-3 text-left text-xs border-b py-3'>
+                <div key={el.id} className={`grid grid-cols-6 gap-3 text-left text-xs border-b py-3`}>
                     <div>{index + 1}</div>
                     <div>{el.name}</div>
-                    <div>{el.stock}</div>
+                    <div className={`${el.stock == "0" ? "text-red-400 font-bold" : "text-black"}`}>{el.stock}</div>
                     <div>{el.type_name}</div>
+                    <div>{el.berat}</div>
                     <div className='flex justify-end w-full'>
                         <button onClick={() => editResource(el.id)} className='text-xs bg-green-500 mr-1 p-1 rounded text-white'><FaPencilAlt /></button>
                         <button onClick={() => deleteResource(el.id)} className='text-xs bg-red-500 p-1 rounded text-white'><FaTrashAlt /></button>
@@ -165,7 +166,8 @@ function StockEmas() {
                     <form onSubmit={handleSubmit}>
                         <div className='rounded p-3 grid grid-cols-2 gap-3'>
                             <input onChange={(e) => handleChange(e)} required placeholder='Nama' name="name" className='p-2 border rounded' />
-                            <input onChange={(e) => handleChange(e)} required placeholder='Stock' name="stock" className='p-2 border rounded' />
+                            <input step="0.1" onChange={(e) => handleChange(e)} required placeholder='Berat' name="berat" type="number" className='p-2 border rounded' />
+                            <input type="number" onChange={(e) => handleChange(e)} required placeholder='Stock' name="stock" className='p-2 border rounded' />
                             <Select onChange={(e) => setSelectedType(e)} id="gold-type" instanceId="gold-type" options={typeOption} />
                         </div>
                         <div className='flex justify-end w-full p-3'>
@@ -181,7 +183,8 @@ function StockEmas() {
                     <form onSubmit={handleUpdate}>
                         <div className='rounded p-3 grid grid-cols-2 gap-3'>
                             <input onChange={(e) => handleUpdateChange(e)} required placeholder='Nama' value={editData?.name || ""} name="name" className='p-2 border rounded' />
-                            <input onChange={(e) => handleUpdateChange(e)} required placeholder='Stock' value={editData?.stock || ""} name="stock" className='p-2 border rounded' />
+                            <input step="0.1" type="number" onChange={(e) => handleUpdateChange(e)} required placeholder='Berat' value={editData?.berat || ""} name="berat" className='p-2 border rounded' />
+                            <input type="number" onChange={(e) => handleUpdateChange(e)} required placeholder='Stock' value={editData?.stock || ""} name="stock" className='p-2 border rounded' />
                             <Select value={selectedType} onChange={(e) => setSelectedType(e)} id="gold-type" instanceId="gold-type" options={typeOption} />
                         </div>
                         <div className='flex justify-end w-full p-3'>
@@ -217,11 +220,12 @@ function StockEmas() {
                         </div>
                     </div>
 
-                    <div className='grid grid-cols-5 gap-3 text-left font-bold text-xs border-b border-t py-3'>
+                    <div className='grid grid-cols-6 gap-3 text-left font-bold text-xs border-b border-t py-3'>
                         <div>No</div>
                         <div>Nama</div>
                         <div>Stok</div>
                         <div>Jenis</div>
+                        <div>Berat</div>
                         <div className='text-right'>Action</div>
                     </div>
                     {custRow()}

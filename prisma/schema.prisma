@@ -23,10 +23,24 @@ model GoldName {
   id         String @id @default(uuid())
   createdAt  DateTime @default(now())
   name String
+  berat String @default("")
   stock String
   type_id String?
   type_name String?
   type_object String?
+}
+
+model soldGold {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  name String
+  berat String
+  qty String
+  gold_id String
+  total String
+  nota_id String
+  nomor_nota String
+  tipe String
 }
 
 model GoldType {
@@ -105,9 +119,31 @@ model Karyawan {
   createdAt  DateTime @default(now())
   nama String
   alamat String
-  password String
-  bagian String
-  gaji String
+  password String @default("")
+  bagian String @default("")
+  gaji String @default("")
+  pph String @default("")
+  potongan_gaji String @default("")
   tanggal_masuk String
   tanggal_keluar String @default("")
+  jenis_hutang String @default("")
+  jenis_barang_hutang String @default("")
+  jumlah_hutang String @default("")
+  nominal_cicilan String @default("")
+  lama_cicilan String @default("")
+  sisa_hutang String @default("")
+  nominal_uang_hutang String @default("")
+  jenis_barang_other String @default("")
+}
+
+model Hutang {
+  id         String @id @default(uuid())
+  createdAt  DateTime @default(now())
+  nama String
+  jenis_hutang String
+  jenis_barang_hutang String
+  jumlah_hutang String
+  nominal_cicilan String
+  lama_cicilan String
+  sisa_hutang String
 }

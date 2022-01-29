@@ -30,7 +30,17 @@ function Sidebar() {
                                 <span className="w-4">
                                     <FaHistory />
                                 </span>
-                                <span>History</span>
+                                <span>Transaksi</span>
+                            </div>
+                        </Link>
+                    </li>
+                    <li className={router.pathname == "/log-barang" ? "bg-green-500 text-white rounded-md transition" : "text-slate-800 hover:bg-gray-200 rounded-md transition"}>
+                        <Link href="/log-barang" >
+                            <div className="flex items-center space-x-3 p-2 rounded-md font-medium">
+                                <span className="w-4">
+                                    <FaHistory />
+                                </span>
+                                <span>Log Barang</span>
                             </div>
                         </Link>
                     </li>
