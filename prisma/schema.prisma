@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,139 +8,146 @@ datasource db {
 }
 
 model Customer {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  nama String
-  no_hp String
-  alamat String?
-  email String?
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  nama      String
+  no_hp     String
+  alamat    String?
+  email     String?
+}
+
+model Petty {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  nominal String
+  keterangan String
 }
 
 model GoldName {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  name String
-  berat String @default("")
-  stock String
-  type_id String?
-  type_name String?
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  name        String
+  berat       String   @default("")
+  stock       String
+  type_id     String?
+  type_name   String?
   type_object String?
 }
 
 model soldGold {
-  id         String @id @default(uuid())
+  id         String   @id @default(uuid())
   createdAt  DateTime @default(now())
-  name String
-  berat String
-  qty String
-  gold_id String
-  total String
-  nota_id String
+  name       String
+  berat      String
+  qty        String
+  gold_id    String
+  total      String
+  nota_id    String
   nomor_nota String
-  tipe String
+  tipe       String
 }
 
 model GoldType {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  name String
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  name      String
 }
 
 model PaymentType {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  name String
-  logo String?
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  name      String
+  logo      String?
 }
 
 model Price {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  Kadar String
-  Harga Int
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  Kadar     String
+  Harga     Int
 }
 
 model TransactionType {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  nama String
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  nama      String
 }
 
 model Nota {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  object String
-  customer String
-  total String
-  nomor_nota String
-  tipe String @default("jual")
-  catatan String @default("")
-  foto String @default("")
-  ongkos String @default("")
-  tipe_dp String @default("")
-  dp String @default("")
-  sisa_pelunasan String @default("")
-  nota_sebelum String @default("")
-  tanggal_selesai String @default("")
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now())
+  object          String
+  customer        String
+  total           String
+  nomor_nota      String
+  tipe            String   @default("jual")
+  catatan         String   @default("")
+  foto            String   @default("")
+  ongkos          String   @default("")
+  tipe_dp         String   @default("")
+  dp              String   @default("")
+  sisa_pelunasan  String   @default("")
+  nota_sebelum    String   @default("")
+  tanggal_selesai String   @default("")
 }
 
 model NotaEdited {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
   original_nota_id String
-  object String
-  customer String
-  total String
-  nomor_nota String
-  tipe String @default("jual")
-  catatan String @default("")
-  foto String @default("")
-  ongkos String @default("")
-  tipe_dp String @default("")
-  dp String @default("")
-  sisa_pelunasan String @default("")
-  nota_sebelum String @default("")
-  tanggal_selesai String @default("")
+  object           String
+  customer         String
+  total            String
+  nomor_nota       String
+  tipe             String   @default("jual")
+  catatan          String   @default("")
+  foto             String   @default("")
+  ongkos           String   @default("")
+  tipe_dp          String   @default("")
+  dp               String   @default("")
+  sisa_pelunasan   String   @default("")
+  nota_sebelum     String   @default("")
+  tanggal_selesai  String   @default("")
 }
 
 model User {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  name String
-  username String
-  password String
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  name      String
+  username  String
+  password  String
 }
 
 model Karyawan {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  nama String
-  alamat String
-  password String @default("")
-  bagian String @default("")
-  gaji String @default("")
-  pph String @default("")
-  potongan_gaji String @default("")
-  tanggal_masuk String
-  tanggal_keluar String @default("")
-  jenis_hutang String @default("")
-  jenis_barang_hutang String @default("")
-  jumlah_hutang String @default("")
-  nominal_cicilan String @default("")
-  lama_cicilan String @default("")
-  sisa_hutang String @default("")
-  nominal_uang_hutang String @default("")
-  jenis_barang_other String @default("")
+  id                  String   @id @default(uuid())
+  createdAt           DateTime @default(now())
+  nama                String
+  alamat              String
+  password            String   @default("")
+  bagian              String   @default("")
+  gaji                String   @default("")
+  pph                 String   @default("")
+  potongan_gaji       String   @default("")
+  tanggal_masuk       String
+  tanggal_keluar      String   @default("")
+  jenis_hutang        String   @default("")
+  jenis_barang_hutang String   @default("")
+  jumlah_hutang       String   @default("")
+  nominal_cicilan     String   @default("")
+  lama_cicilan        String   @default("")
+  sisa_hutang         String   @default("")
+  nominal_uang_hutang String   @default("")
+  jenis_barang_other  String   @default("")
 }
 
 model Hutang {
-  id         String @id @default(uuid())
-  createdAt  DateTime @default(now())
-  nama String
-  jenis_hutang String
+  id                  String   @id @default(uuid())
+  createdAt           DateTime @default(now())
+  nama                String
+  jenis_hutang        String
   jenis_barang_hutang String
-  jumlah_hutang String
-  nominal_cicilan String
-  lama_cicilan String
-  sisa_hutang String
+  jumlah_hutang       String
+  nominal_cicilan     String
+  lama_cicilan        String
+  sisa_hutang         String
 }
