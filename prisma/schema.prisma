@@ -16,12 +16,21 @@ model Customer {
   email     String?
 }
 
-model Petty {
+model Bank {
   id String @id @default(uuid())
   createdAt DateTime @default(now())
   nominal String
   keterangan String
+  tipe String
 }
+
+model Petty {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  nominal    String
+  keterangan String
+}
+
 
 model GoldName {
   id          String   @id @default(uuid())
@@ -116,6 +125,7 @@ model User {
   name      String
   username  String
   password  String
+  role String
 }
 
 model Karyawan {

@@ -41,9 +41,9 @@ function Karyawan() {
           </Link>
         </div>
         <div className="w-28 mr-3 cursor-pointer">
-          <Link href="/karyawan-list">
+          <Link href="/karyawan">
             <div>
-              <div className="text-center cursor-pointer rounded-md flex justify-center p-5  hover:bg-green-500 bg-green-500/90 mb-2">
+              <div className="text-center cursor-not-allowed rounded-md flex justify-center p-5  hover:bg-green-500 bg-green-500/90 mb-2">
                 <FaUserClock className="text-white" size={40} />
               </div>
               <div className="text-center font-semibold text-slate-700">

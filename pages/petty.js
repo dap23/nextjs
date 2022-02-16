@@ -2,6 +2,7 @@ import { useEffect, useState, React } from "react";
 import axios from "axios";
 import { FaPencilAlt, FaTrashAlt, FaSearch } from "react-icons/fa";
 import { toast } from "react-toastify";
+import Sidebar from "../components/sidebar";
 
 function Petty() {
   const [page, setPage] = useState(1);
